@@ -1,0 +1,129 @@
+#!/usr/bin/env bash
+#
+#  installer for RRLpipe functions
+#
+#  Version 0.2 (March 20, 2020)
+#
+#  Copyright (c) 2020 Lela Andrews
+#
+#  This software is provided 'as-is', without any express or implied
+#  warranty. In no event will the authors be held liable for any damages
+#  arising from the use of this software.
+#
+#  Permission is granted to anyone to use this software for any purpose,
+#  including commercial applications, and to alter it and redistribute it
+#  freely, subject to the following restrictions:
+#
+#  1. The origin of this software must not be misrepresented; you must not
+#     claim that you wrote the original software. If you use this software
+#     in a product, an acknowledgment in the product documentation would be
+#     appreciated but is not required.
+#  2. Altered source versions must be plainly marked as such, and must not be
+#     misrepresented as being the original software.
+#  3. This notice may not be removed or altered from any source distribution.
+#
+
+## Find home directory.
+        bindir="$( cd "$( dirname "$0" )" && pwd )"
+        workdir=$(pwd)
+        cd
+        homedir=$(pwd)
+        cd $workdir
+        echo ""
+
+## Run install steps if .bashrc exists
+    if [[ -f "$homedir/.bashrc" ]]; then
+	repodir="$( cd "$( dirname "$0" )" && pwd )"
+	sourceline="source $srcdir/RRLpipe_autocomplete"
+	sourcecount=$(grep "$sourceline" ~/.bashrc 2>/dev/null | wc -l)
+	pathline="$bindir"
+	pathcount=$(grep "$pathline" ~/.bashrc 2>/dev/null | wc -l)
+
+	if [[ "$sourcecount" == "0" ]]; then
+	echo "
+## Autocompletion for RRLpipe commands.
+$sourceline
+" >> $homedir/.bashrc
+
+		sourcecount=$(grep $sourceline ~/.bashrc 2>/dev/null | wc -l)
+		if [[ "$sourcecount" == "0" ]]; then
+		echo "Unexpected problem. Command autocompletion not configured.
+		"
+		elif [[ "$sourcecount" -ge "1" ]]; then
+		echo "Command autocompletion successfully configured for RRLpipe.
+		"
+		fi
+
+	elif [[ "$sourcecount" -ge "1" ]]; then
+	echo "Command autocompletion already configured for RRLpipe.
+	"
+	fi
+
+	if [[ "$pathcount" == "0" ]]; then
+
+		bashrcpathcount=$(grep "PATH=" ~/.bashrc 2>/dev/null | wc -l)
+		if [[ "$bashrcpathcount" -ge "1" ]]; then
+		quotetest=$(grep "PATH=\"" ~/.bashrc 2>/dev/null | wc -l)
+			if [[ "$quotetest" == "0" ]]; then
+			sed -i "s/PATH=/PATH=\"/" ~/.bashrc
+			sed -i "/PATH=/ s/$/\"/" ~/.bashrc
+			fi
+		sed -i "/PATH/s/\"$/:TARGET/" ~/.bashrc 2>/dev/null || true
+		sed -i "/PATH/s|TARGET$|$repodir/scripts\"|" ~/.bashrc 2>/dev/null || true
+		else
+		echo "
+## Add PATH variables here.
+PATH=\"\$PATH:$bindir/\"
+" >> $homedir/.bashrc
+		fi
+
+		pathcount=$(grep $pathline ~/.bashrc 2>/dev/null | wc -l)
+		if [[ "$pathcount" == "0" ]]; then
+		echo "Unexpected problem. PATH to RRLpipe scripts not configured.
+		"
+		elif [[ "$pathcount" -ge "1" ]]; then
+		echo "Command PATH successfully configured for RRLpipe.
+		"
+		fi
+
+	elif [[ "$pathcount" -ge "1" ]]; then
+	echo "Command PATH already configured for RRLpipe.
+	"
+	fi
+
+source $homedir/.bashrc
+
+	sourcecount=$(grep "$sourceline" ~/.bashrc 2>/dev/null | wc -l)
+	pathcount=$(grep "$pathline" ~/.bashrc 2>/dev/null | wc -l)
+
+	if [[ "$sourcecount" -ge "1" && "$pathcount" -ge "1" ]]; then
+	echo "RRLpipe is properly configured. Restart your terminal or run:
+source ~/.bashrc
+	"
+	else
+	echo "Unexpected problem(s) encountered.
+	"
+		if [[ "$sourcecount" -eq "0" ]]; then
+		echo "Command autocompletion not configured.
+		"
+		else
+		echo "Command autocompletion is properly configured.
+		"
+		fi
+
+		if [[ "$pathcount" -eq "0" ]]; then
+		echo "Command PATH not configured.
+		"
+		else
+		echo "Command PATH is properly configured.
+		"
+		fi
+	fi
+
+else
+	echo "
+No $homedir/.bashrc file found. You may need to manually configure RRLpipe.
+	"
+fi
+
+exit 0
