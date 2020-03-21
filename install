@@ -33,14 +33,114 @@ rerun command with \"sudo\": sudo install
         exit 1
     else
         echo ""
-        wait 1
-        echo "This will install RRLpipe to your system. Files will be placed in the following locations:
-Commands:	/usr/local/bin
-Libraries:	/usr/local/lib
-Resources:	/usr/local/src
-Documentation:	/usr/local/share/doc
+        sleep 1
+    fi
 
-If you would like to proceed, type \"yes\" or type anything else to exit now."
+## User feedback
+    echo "Preparing to install RRLseq. Finding directories...
+"
+    sleep 1
+
+## Test that intended install directories are present, else run config questions
+    if [[ -d "/usr/local/bin" ]]; then
+        bindir="/usr/local/bin"
+    else
+        bindir="missing"
+        echo "Install could not find \"/usr/local/bin\".
+
+Please specify a location for command files:"
+        read bindir
+        echo "You entered: \"$bindir\"
+If this is correct, type \"yes\" or type anything else to exit now."
+        read yesno
+        if [[ "$yesno" != "yes" ]]; then
+            echo "RRLpipe was not installed. Exiting.
+"
+            exit 1
+        fi
+    fi
+    if [[ -d "/usr/local/lib" ]]; then
+        libdir="/usr/local/lib"
+    else
+        libdir="missing"
+        echo "Install could not find \"/usr/local/lib\".
+
+Please specify a location for library files:"
+        read libdir
+        echo "You entered: \"$libdir\"
+If this is correct, type \"yes\" or type anything else to exit now."
+        read yesno
+        if [[ "$yesno" != "yes" ]]; then
+            echo "RRLpipe was not installed. Exiting.
+"
+            exit 1
+        fi
+    fi
+    if [[ -d "/usr/local/src" ]]; then
+        srcdir="/usr/local/src"
+    else
+        srcdir="missing"
+        echo "Install could not find \"/usr/local/src\".
+
+Please specify a location for resource files:"
+        read srcdir
+        echo "You entered: \"$srcdir\"
+If this is correct, type \"yes\" or type anything else to exit now."
+        read yesno
+        if [[ "$yesno" != "yes" ]]; then
+            echo "RRLpipe was not installed. Exiting.
+"
+            exit 1
+        fi
+    fi
+    if [[ -d "/usr/local/share/doc" ]]; then
+        docdir="/usr/local/share/doc"
+    else
+        docdir="missing"
+        echo "Install could not find \"/usr/local/share/doc\".
+
+Please specify a location for documentation files:"
+        read docdir
+        echo "You entered: \"$docdir\"
+If this is correct, type \"yes\" or type anything else to exit now.
+"
+        read yesno
+        if [[ "$yesno" != "yes" ]]; then
+            echo "RRLpipe was not installed. Exiting.
+"
+            exit 1
+        fi
+    fi
+    if [[ -d "/etc/bash_completion.d" ]]; then
+        bacdir="/etc/bash_completion.d"
+    else
+        bacdir="missing"
+        echo "Install could not find \"/etc/bash_completion.d\".
+
+Please specify a location for bash completion files:"
+        read docdir
+        echo "You entered: \"$docdir\"
+If this is correct, type \"yes\" or type anything else to exit now.
+"
+        read yesno
+        if [[ "$yesno" != "yes" ]]; then
+            echo "RRLpipe was not installed. Exiting.
+"
+            exit 1
+        fi
+    fi
+
+        echo "
+This will install RRLpipe to your system. Files will be placed in the following locations:
+Commands:	$bindir
+Libraries:	$libdir
+Resources:	$srcdir
+Documentation:	$docdir
+Completion:	$bacdir
+
+
+If you would like to proceed, type \"yes\" or type anything else to exit now.
+"
         read yesno
         if [[ "$yesno" != "yes" ]]; then
             echo "
@@ -49,11 +149,47 @@ RRLpipe was not installed. Exiting.
             exit 1
         fi
     fi
-echo "done"
+    sleep 1
+
+## Gather remaining variables and move to repo directory
+    d0=$(date)
+    hn=$(hostname)
+    repodir=$(pwd)
+    cd $repodir
+
+## Check for prior installation and run uninstall if necessary
+    echo "Checking for prior installation.
+"
+    if [[ -e "$repodir/.install_log ]]; then
+        echo "Prior installation found. Running uninstall first to remove old files.
+"
+        sudo ./uninstall
+    else
+        echo "No prior installation found.
+"
+    fi
+
 exit 0
+
+## Generate install log file
+echo "
+Installing RRLpipe to $hn ($d0).
+
+Copying files:
+
+
+" > $repodir/.install_log
+
+## Generate uninstall file
+
+
+exit 0
+
+
+
 ## Find home directory.
         bindir="$( cd "$( dirname "$0" )" && pwd )"
-        workdir=$(pwd)
+        repodir=$(pwd)
         cd
         homedir=$(pwd)
         cd $workdir
