@@ -23,6 +23,34 @@
 #  3. This notice may not be removed or altered from any source distribution.
 #
 
+
+## Check if install was executed as root
+    if [[ $EUID -ne 0 ]]; then
+        echo "Install must be run as root.
+
+rerun command with \"sudo\": sudo install
+" 
+        exit 1
+    else
+        echo ""
+        wait 1
+        echo "This will install RRLpipe to your system. Files will be placed in the following locations:
+Commands:	/usr/local/bin
+Libraries:	/usr/local/lib
+Resources:	/usr/local/src
+Documentation:	/usr/local/share/doc
+
+If you would like to proceed, type \"yes\" or type anything else to exit now."
+        read yesno
+        if [[ "$yesno" != "yes" ]]; then
+            echo "
+RRLpipe was not installed. Exiting.
+"
+            exit 1
+        fi
+    fi
+echo "done"
+exit 0
 ## Find home directory.
         bindir="$( cd "$( dirname "$0" )" && pwd )"
         workdir=$(pwd)
