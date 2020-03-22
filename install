@@ -60,14 +60,14 @@ If this is correct, type \"yes\" or type anything else to exit now."
         fi
     fi
     if [[ -d "/usr/local/lib" ]]; then
-        libdir="/usr/local/lib"
+        libdir0="/usr/local/lib"
     else
-        libdir="missing"
+        libdir0="missing"
         echo "Install could not find \"/usr/local/lib\".
 
 Please specify a location for library files:"
         read libdir
-        echo "You entered: \"$libdir\"
+        echo "You entered: \"$libdir0\"
 If this is correct, type \"yes\" or type anything else to exit now."
         read yesno
         if [[ "$yesno" != "yes" ]]; then
@@ -111,6 +111,24 @@ If this is correct, type \"yes\" or type anything else to exit now.
             exit 1
         fi
     fi
+    if [[ -d "/tmp" ]]; then
+        tmpdir="/tmp"
+    else
+        tmpdir="missing"
+        echo "Install could not find \"/tmp\".
+
+Please specify a location for temporary files:"
+        read tmpdir
+        echo "You entered: \"$tmpdir\"
+If this is correct, type \"yes\" or type anything else to exit now.
+"
+        read yesno
+        if [[ "$yesno" != "yes" ]]; then
+            echo "RRLpipe was not installed. Exiting.
+"
+            exit 1
+        fi
+    fi
     if [[ -d "/etc/bash_completion.d" ]]; then
         bacdir="/etc/bash_completion.d"
     else
@@ -119,7 +137,7 @@ If this is correct, type \"yes\" or type anything else to exit now.
 
 Please specify a location for bash completion files:"
         read docdir
-        echo "You entered: \"$docdir\"
+        echo "You entered: \"$bacdir\"
 If this is correct, type \"yes\" or type anything else to exit now.
 "
         read yesno
@@ -133,9 +151,10 @@ If this is correct, type \"yes\" or type anything else to exit now.
         echo "
 This will install RRLpipe to your system. Files will be placed in the following locations:
 Commands:	$bindir
-Libraries:	$libdir
+Libraries:	$libdir0
 Resources:	$srcdir
 Documentation:	$docdir
+Temporary:	$tmpdir
 Completion:	$bacdir
 
 
@@ -148,7 +167,7 @@ RRLpipe was not installed. Exiting.
 "
             exit 1
         fi
-    fi
+
     sleep 1
 
 ## Gather remaining variables and move to repo directory
@@ -156,11 +175,22 @@ RRLpipe was not installed. Exiting.
     hn=$(hostname)
     repodir=$(pwd)
     cd $repodir
+    libdir="$libdir0/RRLpipe-core"
+
+## Generate path config file
+    cp $repodir/bin/.RRLpipe.config.blank $repodir/bin/.RRLpipe.config
+    sed -i "s@Commands\tundefined@Commands\t$bindir@" $repodir/bin/.RRLpipe.config
+    sed -i "s@Libraries\tundefined@Libraries\t$libdir@" $repodir/bin/.RRLpipe.config
+    sed -i "s@Resources\tundefined@Resources\t$srcdir@" $repodir/bin/.RRLpipe.config
+    sed -i "s@Documentation\tundefined@Documentation\t$docdir@" $repodir/bin/.RRLpipe.config
+    sed -i "s@Temporary\tundefined@Temporary\t$tmpdir@" $repodir/bin/.RRLpipe.config
+    sed -i "s@Completion\tundefined@Completion\t$bacdir@" $repodir/bin/.RRLpipe.config
 
 ## Check for prior installation and run uninstall if necessary
-    echo "Checking for prior installation.
+    echo "
+Checking for prior installation.
 "
-    if [[ -e "$repodir/.install_log ]]; then
+    if [[ -e "$repodir/.install_log" ]]; then
         echo "Prior installation found. Running uninstall first to remove old files.
 "
         sudo ./uninstall
@@ -169,125 +199,66 @@ RRLpipe was not installed. Exiting.
 "
     fi
 
-exit 0
+## Report to user and generate install log
+    echo "
+Installing RRLpipe.
 
-## Generate install log file
-echo "
-Installing RRLpipe to $hn ($d0).
-
-Copying files:
-
-
-" > $repodir/.install_log
+Copying files, generating install log file and uninstallation script...
+" 
+    echo "
+RRLpipe installation to $hn on $d0
+"    > $repodir/.install_log
 
 ## Generate uninstall file
+    echo "#!/usr/bin/env bash
+"    > $repodir/.uninstall
 
+## For loops to copy files and send commands to .install_log and .uninstall
+## bin
+    for fname in `cat $repodir/bin/.install_list`; do
+        cp $repodir/bin/$fname $bindir
+        echo "cp $repodir/bin/$fname $bindir" >> $repodir/.install_log
+        echo "rm $bindir/$fname" >> $repodir/.uninstall
+    done
 
+## lib
+    if [[ -d $libdir ]]; then
+        ldir="TRUE"
+    else
+        mkdir $libdir
+    fi
+    for fname in `cat $repodir/lib/.install_list`; do
+        cp $repodir/lib/RRLpipe-core/$fname $libdir/
+        echo "cp $repodir/lib/RRLpipe-core/$fname $libdir" >> $repodir/.install_log
+        echo "rm $libdir/$fname" >> $repodir/.uninstall
+    done
+    echo "rm -r $libdir" >> $repodir/.uninstall
+
+## src
+    for fname in `cat $repodir/src/.install_list`; do
+        cp $repodir/src/$fname $srcdir/
+        echo "cp $repodir/src/$fname $srcdir" >> $repodir/.install_log
+        echo "rm $srcdir/$fname" >> $repodir/.uninstall
+    done
+
+## doc
+    for fname in `cat $repodir/doc/.install_list`; do
+        cp $repodir/doc/$fname $docdir/
+        echo "cp $repodir/doc/$fname $docdir" >> $repodir/.install_log
+        echo "rm $docdir/$fname" >> $repodir/.uninstall
+    done
+
+## completion
+    for fname in `cat $repodir/etc/.install_list`; do
+        cp $repodir/etc/bash_completion.d/$fname $bacdir/
+        echo "cp $repodir/etc/bash_completion.d/$fname $bacdir" >> $repodir/.install_log
+        echo "rm $bacdir/$fname" >> $repodir/.uninstall
+    done
+sleep 1
+
+## Report to user
+    echo "
+RRLpipe installed. Open a new terminal.
+"
 exit 0
 
-
-
-## Find home directory.
-        bindir="$( cd "$( dirname "$0" )" && pwd )"
-        repodir=$(pwd)
-        cd
-        homedir=$(pwd)
-        cd $workdir
-        echo ""
-
-## Run install steps if .bashrc exists
-    if [[ -f "$homedir/.bashrc" ]]; then
-	repodir="$( cd "$( dirname "$0" )" && pwd )"
-	sourceline="source $srcdir/RRLpipe_autocomplete"
-	sourcecount=$(grep "$sourceline" ~/.bashrc 2>/dev/null | wc -l)
-	pathline="$bindir"
-	pathcount=$(grep "$pathline" ~/.bashrc 2>/dev/null | wc -l)
-
-	if [[ "$sourcecount" == "0" ]]; then
-	echo "
-## Autocompletion for RRLpipe commands.
-$sourceline
-" >> $homedir/.bashrc
-
-		sourcecount=$(grep $sourceline ~/.bashrc 2>/dev/null | wc -l)
-		if [[ "$sourcecount" == "0" ]]; then
-		echo "Unexpected problem. Command autocompletion not configured.
-		"
-		elif [[ "$sourcecount" -ge "1" ]]; then
-		echo "Command autocompletion successfully configured for RRLpipe.
-		"
-		fi
-
-	elif [[ "$sourcecount" -ge "1" ]]; then
-	echo "Command autocompletion already configured for RRLpipe.
-	"
-	fi
-
-	if [[ "$pathcount" == "0" ]]; then
-
-		bashrcpathcount=$(grep "PATH=" ~/.bashrc 2>/dev/null | wc -l)
-		if [[ "$bashrcpathcount" -ge "1" ]]; then
-		quotetest=$(grep "PATH=\"" ~/.bashrc 2>/dev/null | wc -l)
-			if [[ "$quotetest" == "0" ]]; then
-			sed -i "s/PATH=/PATH=\"/" ~/.bashrc
-			sed -i "/PATH=/ s/$/\"/" ~/.bashrc
-			fi
-		sed -i "/PATH/s/\"$/:TARGET/" ~/.bashrc 2>/dev/null || true
-		sed -i "/PATH/s|TARGET$|$repodir/scripts\"|" ~/.bashrc 2>/dev/null || true
-		else
-		echo "
-## Add PATH variables here.
-PATH=\"\$PATH:$bindir/\"
-" >> $homedir/.bashrc
-		fi
-
-		pathcount=$(grep $pathline ~/.bashrc 2>/dev/null | wc -l)
-		if [[ "$pathcount" == "0" ]]; then
-		echo "Unexpected problem. PATH to RRLpipe scripts not configured.
-		"
-		elif [[ "$pathcount" -ge "1" ]]; then
-		echo "Command PATH successfully configured for RRLpipe.
-		"
-		fi
-
-	elif [[ "$pathcount" -ge "1" ]]; then
-	echo "Command PATH already configured for RRLpipe.
-	"
-	fi
-
-source $homedir/.bashrc
-
-	sourcecount=$(grep "$sourceline" ~/.bashrc 2>/dev/null | wc -l)
-	pathcount=$(grep "$pathline" ~/.bashrc 2>/dev/null | wc -l)
-
-	if [[ "$sourcecount" -ge "1" && "$pathcount" -ge "1" ]]; then
-	echo "RRLpipe is properly configured. Restart your terminal or run:
-source ~/.bashrc
-	"
-	else
-	echo "Unexpected problem(s) encountered.
-	"
-		if [[ "$sourcecount" -eq "0" ]]; then
-		echo "Command autocompletion not configured.
-		"
-		else
-		echo "Command autocompletion is properly configured.
-		"
-		fi
-
-		if [[ "$pathcount" -eq "0" ]]; then
-		echo "Command PATH not configured.
-		"
-		else
-		echo "Command PATH is properly configured.
-		"
-		fi
-	fi
-
-else
-	echo "
-No $homedir/.bashrc file found. You may need to manually configure RRLpipe.
-	"
-fi
-
-exit 0

@@ -33,13 +33,13 @@ fi
 }
 trap finish EXIT
 
-## Find repository, bin and lib locations.
+## Call paths
         bindir="$( cd "$( dirname "$0" )" && pwd )"
-        repodir=`dirname $bindir`
-        tmpdir="$repodir/tmp/"
-        libdir="$repodir/lib/"
-        docdir="$repodir/doc/"
-        srcdir="$repodir/src/"
+        libdir=$(grep "Libraries" $bindir/.RRLpipe.config | cut -f2)
+        srcdir=$(grep "Resources" $bindir/.RRLpipe.config | cut -f2)
+        docdir=$(grep "Documentation" $bindir/.RRLpipe.config | cut -f2)
+        tmpdir=$(grep "Temporary" $bindir/.RRLpipe.config | cut -f2)
+        cmpdir=$(grep "Completion" $bindir/.RRLpipe.config | cut -f2)
 
 ## Set working directory and other important variables
         workdir=$(pwd)
