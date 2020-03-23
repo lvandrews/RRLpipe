@@ -8,3 +8,5 @@
 
 Installation: sudo ./install  
 
+Uninstallation: sudo ./uninstall  
+
