@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #
-#  readconfig - Print configured variables to screen.
+#  readconfig_slave.sh - Print akutils configured variables to screen.
 #
-#  Version 1.1 (March 20, 2020)
+#  Version 1.1 (March, 28, 2020)
 #
 #  Copyright (c) 2020 -- Lela Andrews
 #
@@ -36,17 +36,16 @@ trap finish EXIT
 
 
 ## Find scripts location and define variables
-        bindir="$( cd "$( dirname "$0" )" && pwd )"
-        repodir=`dirname $bindir`
-        workdir=$(pwd)
-        tmpdir="$repodir/tmp/"
-        configfile="$1"
-        globallocal="$2"
-        stdout="$3"
-        stderr="$4"
-        randcode="$5"
-        configtest="$repodir/temp/$randcode.config"
-        templatetest="$repodir/temp/$randcode.template"
+workdir=$(pwd)
+configfile="$1"
+globallocal="$2"
+stdout="$3"
+stderr="$4"
+randcode="$5"
+tmpdir="$6"
+srcdir="$7"
+configtest="$tmpdir/$randcode.config"
+templatetest="$tmpdir/$randcode.template"
 
 ## Read config file variables and print to screen
 	echo "

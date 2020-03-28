@@ -35,14 +35,13 @@ function finish {
 trap finish EXIT
 
 ## Find scripts location and set variables
-        bindir="$( cd "$( dirname "$0" )" && pwd )"
-        repodir=`dirname $scriptdir`
         workdir=$(pwd)
-        srcdir="$repodir/src/"
-        tmpdir="$repodir/tmp/"
         stdout="$1"
         stderr="$2"
         randcode="$3"
+        srcdir="$4"
+        tmpdir="$5"
+
         globalconfigsearch=(`ls $srcdir/RRLpipe.global.config 2>/dev/null`)
         localconfigsearch=(`ls RRLpipe*.config 2>/dev/null`)
         DATE=`date +%Y%m%d-%I%M%p`
@@ -97,13 +96,13 @@ OK. Checking for existing global config file.
 No global config file detected.
 
 Creating new global config file."
-		cp $srcdir/blank_config.config $srcdir/RRLpipe.global.config
-		configfile=($srcdir/RRLpipe.global.config)
+		cp $srcdir/blank_config.config $tmpdir/RRLpipe.global.config
+		configfile=($tmpdir/RRLpipe.global.config)
 		else
 		echo "Found existing global config file.
 ($globalconfigsearch)
 	"
-	configfile=($srcdir/RRLpipe.global.config)
+	configfile=($tmpdir/RRLpipe.global.config)
 	fi
 	fi
 

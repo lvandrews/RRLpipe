@@ -24,23 +24,31 @@
 #
 
 ## Find scripts location and set variables
-        bindir="$( cd "$( dirname "$0" )" && pwd )"
-        repodir=`dirname $bindir`
-        workdir=$(pwd)
-        srcdir="$repodir/src/"
+
+        workdir="$1"
+        srcdir="$2"
+        tmpdir="$3"
+        randcode="$4"
 
 ## Test for global and local config files
-        globalconfigcount=`ls $srcdir/RRLpipe.global.config 2>/dev/null | head -1 | wc -l`
-        globalconfigsearch=`ls $srcdir/RRLpipe.global.config 2>/dev/null | head -1`
-        localconfigcount=`ls RRLpipe*.config 2>/dev/null | head -1 | wc -l `
-        localconfigsearch=`ls RRLpipe*.config 2>/dev/null | head -1`
+        globalconfigcount=`ls $tmpdir/RRLpipe.global.config 2>/dev/null | head -1 | wc -l`
+        globalconfigsearch=`ls $tmpdir/RRLpipe.global.config 2>/dev/null | head -1`
+        localconfigcount=`ls $workdir/RRLpipe*.config 2>/dev/null | head -1 | wc -l `
+        localconfigsearch=`ls $workdir/RRLpipe*.config 2>/dev/null | head -1`
 
 	if [[ $localconfigcount -eq 1 ]]; then
-	configfile=($localconfigsearch)
+            configfile=($localconfigsearch)
+            globallocal="local"
+
 	elif [[ $globalconfigcount -eq 1 ]]; then
-	configfile=($globalconfigsearch)
+            configfile=($globalconfigsearch)
+            globallocal="global"
+        else
+            configfile="null"
+            globallocal="null"
 	fi
 
-echo $configfile
+    echo "$globallocal" > $tmpdir/${randcode}_configid
+    echo "$configfile" >> $tmpdir/${randcode}_configid
 
 exit 0

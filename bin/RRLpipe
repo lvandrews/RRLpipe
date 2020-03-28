@@ -33,6 +33,10 @@ fi
 }
 trap finish EXIT
 
+## Set version and copyright
+        version="0.1"
+        copyright="Lela Andrews, 2020"
+
 ## Call paths
         bindir="$( cd "$( dirname "$0" )" && pwd )"
         libdir=$(grep "Libraries" $bindir/.RRLpipe.config | cut -f2)
@@ -57,100 +61,106 @@ trap finish EXIT
                 exit 0  
         fi
 
-## Find config file and run config utility if necessary
-        globalconfigsearch=(`ls $srcdir/RRLpipe.global.config 2>/dev/null`)
-        localconfigsearch=(`ls RRLpipe*.config 2>/dev/null`)
-        if [[ -f "$localconfigsearch" ]]; then
-                configfile="$localconfigsearch"
-                globallocal="local"
-        elif [[ -f "$globalconfigsearch" ]]; then
-                configfile="$globalconfigsearch"
-                globallocal="global"
-        else
+## Display version and copyright
+        echo "RRLpipe version $version, $copyright
+"
+
+## Find config file with config_id script, run config if result is null
+
+        bash $libdir/config_id $workdir $srcdir $tmpdir $randcode
+        wait
+        globallocal=$(head -1 $tmpdir/${randcode}_configid)
+        configfile=$(tail -1 $tmpdir/${randcode}_configid)
+
+        if [[ "$globallocal" == "null" ]]; then
         echo "
-No config file is present.  Running config utility to establish configurable
-options.
+No config file is present. Running config utility to establish configurable options.
         "
-        bash $libdir/configure $stdout $stderr $randcode
-        exit 0
+        bash $libdir/configure $stdout $stderr $randcode $srcdir $tmpdir
+
+        elif [[ "$globallocal" == "local" ]]; then
+            echo "Using local config file: $configfile
+"
+        elif [[ "$globallocal" == "global" ]]; then
+            echo "Using global config file: $configfile
+"
         fi
 
 ## Check whether user supplied print_config.  If yes, list config options.
         if [[ "$1" == "print_config" ]]; then
-        bash $bindir/readconfig $configfile $globallocal $stdout $stderr $randcode
+        bash $libdir/readconfig $configfile $globallocal $stdout $stderr $randcode $tmpdir $srcdir
         exit 0
         fi
 
 ## Check whether user supplied configure.  If yes, run config utility.
         if [[ "$1" == "configure" ]]; then
-        if [[ "$#" == "1" ]]; then
-        bash $bindir/configure_slave $stdout $stderr $randcode
-        exit 0
-        elif [[ "$2" == "help" ]]; then
-        less $repodir/docs/configure.help
-        exit 0
-        elif [[ "$#" == "3" ]]; then
-        bash $bindir/configure_setting_slave $stdout $stderr $randcode $2 $3
-        exit 0
-        fi
+            if [[ "$#" == "1" ]]; then
+                bash $libdir/configure $stdout $stderr $randcode $srcdir $tmpdir
+                exit 0
+            elif [[ "$2" == "help" ]]; then
+                less $docdir/configure.help
+                exit 0
+            elif [[ "$#" == "3" ]]; then
+                bash $libdir/configure_setting $stdout $stderr $randcode $2 $3
+                exit 0
+            fi
         fi
 
 
 ## Check whether user supplied check.  If yes, run dependency check.
-        if [[ "$1" == "check" ]]; then
-        bash $bindir/dependency_check_slave $stdout $stderr $randcode
-        exit 0
-        fi
+#        if [[ "$1" == "check" ]]; then
+#            bash $bindir/dependency_check_slave $stdout $stderr $randcode
+#            exit 0
+#        fi
 
 ## Check whether user supplied check_result.  If yes, print results of dependency check.
-        if [[ "$1" == "check_result" ]]; then
-        resultcount=`ls $srcdir/RRLpipe.dependencies.result 2>/dev/null | wc -l`
-                if [[ $resultcount == 0 ]]; thep
-                echo "
-Dependency check has not been run previously.  To generate results, execute:
-akutils check
-                "
-                elif [[ $resultcount == 1 ]]; then
-                less $srcdir/RRLpipe.dependencies.result
-                fi
-                exit 0
-        fi
+#        if [[ "$1" == "check_result" ]]; then
+#        resultcount=`ls $srcdir/RRLpipe.dependencies.result 2>/dev/null | wc -l`
+#                if [[ $resultcount == 0 ]]; thep
+#                echo "
+#Dependency check has not been run previously.  To generate results, execute: akutils check
+#                "
+#                elif [[ $resultcount == 1 ]]; then
+#                less $srcdir/RRLpipe.dependencies.result
+#                fi
+#                exit 0
+#        fi
 
 ## Check whether user supplied test.  If yes, run workflow tests.
-        if [[ "$1" == "test" ]]; then
-        bash $bindir/RRLpipe_test $stdout $stderr $randcode
-        exit 0
-        fi
+#        if [[ "$1" == "test" ]]; then
+#        bash $bindir/RRLpipe_test $stdout $stderr $randcode
+#        exit 0
+#        fi
 
 ## Check whether user supplied test_result.  If yes, print results of workflow tests.
-        if [[ "$1" == "test_result" ]]; then
-        resultcount=`ls $srcdir/RRLpipe.workflow.test.result 2>/dev/null | wc -l`
-                if [[ $resultcount == 0 ]]; then
-                echo "
-Workflow tests have not been run previously.  To generate results, execute:
-akutils test
-                "
-                elif [[ $resultcount == 1 ]]; then
-                less -r $srcdir/RRLpipe.workflow.test.result
-                fi
-                exit 0
-        fi
+#        if [[ "$1" == "test_result" ]]; then
+#        resultcount=`ls $srcdir/RRLpipe.workflow.test.result 2>/dev/null | wc -l`
+#                if [[ $resultcount == 0 ]]; then
+#                echo "
+#Workflow tests have not been run previously.  To generate results, execute:
+#akutils test
+#                "
+#                elif [[ $resultcount == 1 ]]; then
+#                less -r $srcdir/RRLpipe.workflow.test.result
+#                fi
+#                exit 0
+#        fi
 
 ## Check whether user supplied demult.  If yes, run demult or display specific usage or help
-        if [[ "$1" == "demult" ]]; then
-                if [[ -z "$2" ]]; then
-                cat $docdir/demult.usage
-                exit 0
-                elif [[ "$2" == "help" ]]; then
-                less $docdir/demult.help
-                exit 0
-                fi
-        bash $libdir/demult $stdout $stderr $randcode $configfile $2 $3 $4 $5
-        exit 0
-        fi
+#        if [[ "$1" == "demult" ]]; then
+#                if [[ -z "$2" ]]; then
+#                cat $docdir/demult.usage
+#                exit 0
+#                elif [[ "$2" == "help" ]]; then
+#                less $docdir/demult.help
+#                exit 0
+#                fi
+#        bash $libdir/demult $stdout $stderr $randcode $configfile $2 $3 $4 $5
+#        exit 0
+#        fi
 
 
-## Check whether user supplied update.  If yes, run akutils_update.sh or display specific usage or help
+## Check whether user supplied update.  If yes, run update or display specific usage or help
         if [[ "$1" == "update" ]]; then
 #               if [[ -z "$2" ]]; then
 #               cat $repodir/docs/update.usage
@@ -161,6 +171,12 @@ akutils test
 #               fi
         bash $libdir/update
         exit 0
+        fi
+
+## Check whether user supplied workflow. If yes, run workflow
+        if [[ "$1" == "workflow" ]]; then
+            bash $libdir/workflow
+            exit 0
         fi
 
 ## Display usage for non-parseable command.
