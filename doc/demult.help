@@ -1,0 +1,47 @@
+
+**************************
+***                    ***
+***      RRLpipe       ***
+***                    ***
+**************************
+
+<press "q" to exit help>
+
+Process RADseq/RRLseq data through a Stacks 2 pipeline.
+
+This script assumes you already have Stacks 2 functioning with all of its dependencies.
+
+Usage (order is important):
+RRLpipe [command] [arguments]
+
+	Commands:	
+		demult			(not yet functional)
+		workflow
+		configure
+		configure_setting	(not yet functional)
+                print_config
+		help
+
+	Arguments:
+		workflow	<databasename> <reference>		
+		demult		<mapping_file> <index_read> <read1> <read2>
+
+	<databasename> should NOT include "_radtags" suffix
+
+	<read2> is optional
+
+	<reference> is absolute path to bowtie2-indexed reference or 
+	specify "denovo" for denovo analysis
+
+	"workflow" command will first look for demult-derep output. If not present,
+	will attempt to generate it, and will look for index.fastq, read1.fastq,
+	and read2.fastq. If files are named otherwise, script will fail. Also
+	requires a sample map file (any file that starts with "map").
+	
+Mapping file must be in the following format:
+#WellPosition	SampleID	IndexSequence	Rep	PopulationID
+A1	Sample1.1	TTCATCCGTAACGGGA	1	Pop1
+B1	Sample2.1	TTCATCCGGTACCTCA	1	Pop1
+
+Additional metadata categories can be added subsequent to the PopulationID field.
+
