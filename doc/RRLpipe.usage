@@ -2,16 +2,18 @@ Usage (order is important):
 RRLpipe [command] [arguments]
 
 	Commands:	
-		workflow
-		demult		(not yet functional)
+		analyze
+		demult
+		stats
 		configure
 		configure_setting	(not yet functional)
                 print_config
 		help
 
 	Arguments:
-		workflow	<databasename> <reference>		
-		demult		<mapping_file> <index_read> <read1> <read2>
+		analyze	<databasename> <reference>		
+		demult	<mapping_file> <index_read> <read1> <read2>
+		stats	<metadata file> <categories>
 
 RRRLpipe <databasename> <sample mapping file> <reference> <index_fastq> <read1_fastq> <read2_fastq>
 
