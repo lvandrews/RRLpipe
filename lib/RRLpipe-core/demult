@@ -63,13 +63,13 @@ trap finish EXIT
   libdir=($5)
   docdir=($6)
   tmpdir=($7)
-	metadatafile0=($8)
+	mapfile=($8)
 	index=($9)
 	read1=(${10})
 	read2=(${11})
 
 ## If incorrect number of arguments supplied, display usage
-	if [[ "$#" -le "7" ]] || [[ "$#" -ge "10" ]]; then
+	if [[ "$#" -le "9" ]] || [[ "$#" -ge "12" ]]; then
 		cat $docdir/demult.usage
 		exit 1
 	fi
@@ -95,16 +95,16 @@ trap finish EXIT
 	fi
 
 ## Check for adapters file or exit
-	adaptest=$(ls adapter* 2>/dev/null | wc -l)
-	if [[ "$adaptest" -ge "1" ]]; then
-	adapters=$(ls adapter* | head -1)
-	else
-	echo "
-No adapter file found. (adapter*)
-Exiting.
-	"
-	exit 1
-	fi
+#	adaptest=$(ls adapter* 2>/dev/null | wc -l)
+#	if [[ "$adaptest" -ge "1" ]]; then
+#	adapters=$(ls adapter* | head -1)
+#	else
+#	echo "
+#No adapter file found. (adapter*)
+#Exiting.
+#	"
+#	exit 1
+#	fi
 
 ## Define working directory and log file
 	date0=`date +%Y%m%d_%I%M%p`
@@ -134,18 +134,18 @@ Exiting.
 	slminpercent="0.95"
 
 ## Check that actual read length is not shorter than desired read length
-	seqlength=$((`sed '2q;d' $read1 | egrep "\w+" | wc -m`-1))
-	length_check=$(echo "$seqlength-$read_length" | bc | cut -d. -f1)
-	if [[ "$length_check" -lt "0" ]]; then
-		echo "
-Your sequencing reads are shorter than your desired read length as specified in
-your config file.
-Actual read length: $seqlength
-Desired read length: $read_length
-Adjust your config file accordingly (run RADseq_utility configure). Exiting.
-		"
-		exit 1
-	fi
+#	seqlength=$((`sed '2q;d' $read1 | egrep "\w+" | wc -m`-1))
+#	length_check=$(echo "$seqlength-$read_length" | bc | cut -d. -f1)
+#	if [[ "$length_check" -lt "0" ]]; then
+#		echo "
+#Your sequencing reads are shorter than your desired read length as specified in
+#your config file.
+#Actual read length: $seqlength
+#Desired read length: $read_length
+#Adjust your config file accordingly (run RADseq_utility configure). Exiting.
+#		"
+#		exit 1
+#	fi
 
 ## Log demult-derep start
 	res0=$(date +%s.%N)
@@ -157,52 +157,52 @@ Sequencing mode detected: $mode1
 " >> $log
 
 ## Parse metadata file contents
-echo "Parsing metadata file contents.
-"
-	cp $metadatafile0 $outdir/metadata_file.txt
-	metadatafile="$outdir/metadata_file.txt"
-	SampleIDcol=$(awk '{for(i=1; i<=NF; i++) {if($i == "SampleID") printf(i) } exit 0}' $metadatafile)
-	Indexcol=$(awk '{for(i=1; i<=NF; i++) {if($i == "IndexSequence") printf(i) } exit 0}' $metadatafile)
-	Repcol=$(awk '{for(i=1; i<=NF; i++) {if($i == "Rep") printf(i) } exit 0}' $metadatafile)
-	Popcol=$(awk '{for(i=1; i<=NF; i++) {if($i == "PopulationID") printf(i) } exit 0}' $metadatafile)
-	wait
+#echo "Parsing metadata file contents.
+#"
+#	cp $metadatafile0 $outdir/metadata_file.txt
+#	metadatafile="$outdir/metadata_file.txt"
+#	SampleIDcol=$(awk '{for(i=1; i<=NF; i++) {if($i == "SampleID") printf(i) } exit 0}' $metadatafile)
+#	Indexcol=$(awk '{for(i=1; i<=NF; i++) {if($i == "IndexSequence") printf(i) } exit 0}' $metadatafile)
+#	Repcol=$(awk '{for(i=1; i<=NF; i++) {if($i == "Rep") printf(i) } exit 0}' $metadatafile)
+#	Popcol=$(awk '{for(i=1; i<=NF; i++) {if($i == "PopulationID") printf(i) } exit 0}' $metadatafile)
+#	wait
 
 ## Extract data from metadata file
 	#Demultiplexing file
-	mapfile="$outdir/demultfile.txt"
-	idtemp="$tmpdir/${randcode}_sampleids.temp"
-	indtemp="$tmpdir/${randcode}_indexes.temp"
-	poptemp="$tmpdir/${randcode}_pops.temp"
-	touch $tpdir/${randcode}_sampleids.temp
-	grep -v "#" $metadatafile | cut -f${SampleIDcol} > $idtemp
-	grep -v "#" $metadatafile | cut -f${Indexcol} > $indtemp
-	grep -v "#" $metadatafile | cut -f${Popcol} > $poptemp
-	wait
-	paste $idtemp $indtemp > $mapfile
-	wait
+#	mapfile="$outdir/demultfile.txt"
+#	idtemp="$tmpdir/${randcode}_sampleids.temp"
+#	indtemp="$tmpdir/${randcode}_indexes.temp"
+#	poptemp="$tmpdir/${randcode}_pops.temp"
+#	touch $tpdir/${randcode}_sampleids.temp
+#	grep -v "#" $metadatafile | cut -f${SampleIDcol} > $idtemp
+#	grep -v "#" $metadatafile | cut -f${Indexcol} > $indtemp
+#	grep -v "#" $metadatafile | cut -f${Popcol} > $poptemp
+#	wait
+#	paste $idtemp $indtemp > $mapfile
+#	wait
 
-	if [[ ! -f $mapfile ]]; then
-		echo "Unexpected problem. Demultiplexing map not generated. Check
-your inputs and try again. Exiting.
-		"
-	exit 1
-	fi
+#	if [[ ! -f $mapfile ]]; then
+#		echo "Unexpected problem. Demultiplexing map not generated. Check
+#your inputs and try again. Exiting.
+#		"
+#	exit 1
+#	fi
 
 	#Dereplication file
-	repfile="$outdir/repfile.txt"
-	awk -v repcol="$Repcol" '$repcol == 1' $metadatafile | cut -f${SampleIDcol} | cut -f1 -d"." > $repfile
+#	repfile="$outdir/repfile.txt"
+#	awk -v repcol="$Repcol" '$repcol == 1' $metadatafile | cut -f${SampleIDcol} | cut -f1 -d"." > $repfile
 
-	#Initial populations file (non-dereplicated)
-	popmap0="$tmpdir/${randcode}_popids0.temp"
-	paste $idtemp $poptemp > $popmap0
+#	#Initial populations file (non-dereplicated)
+#	popmap0="$tmpdir/${randcode}_popids0.temp"
+#	paste $idtemp $poptemp > $popmap0
 
 	#Populations file for dereplicated data
-	popmap1="$tmpdir/${randcode}_popids1.temp"
-	popmap="$outdir/populations_file.txt"
-	for line in `cat $repfile`; do
-	grep ${line}.1 $popmap0 | cut -f2 >> $popmap1
-	done
-	paste $repfile $popmap1 > $popmap
+#	popmap1="$tmpdir/${randcode}_popids1.temp"
+#	popmap="$outdir/populations_file.txt"
+#	for line in `cat $repfile`; do
+#	grep ${line}.1 $popmap0 | cut -f2 >> $popmap1
+#	done
+#	paste $repfile $popmap1 > $popmap
 
 ## Demultiplex sequencing data with fastq-multx
 	if [[ -d $outdir/demultiplexed_data ]]; then
@@ -273,8 +273,9 @@ $outdir/demultiplexed_data
 #	fi
 #	fi
 
-## Quality filter dereplicated data with fastq-mcf
-	if [[ ! -d $outdir/dereplicated_quality_filtered_data ]]; then
+## Quality filter demultiplexd data with fastq-mcf
+  dqf="$outdir/demultiplexed_quality_filtered_data"
+	if [[ ! -d $dqf ]]; then
 	echo "Quality filtering raw data with fastq-mcf.
 Read lengths detected: $seqlength
 Minimum quality threshold: $qual
@@ -287,24 +288,24 @@ Read length to retain: $read_length
 	" >> $log
 	res2=$(date +%s.%N)
 
-		mkdir -p $outdir/dereplicated_quality_filtered_data
+		mkdir -p $dqf
 
 	if [[ "$mode" == "single" ]]; then
-	for line in `cat $repfile | cut -f1`; do
+	for line in `cat $mapfile | cut -f1`; do
 		while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do
 		sleep 1
 		done
-		echo "	fastq-mcf -q $qual -l $read_length -L $read_length -k 0 -t 0.001 $adapters $outdir/dereplicated_data/$line.read.fq -o $outdir/dereplicated_quality_filtered_data/$line.read.mcf.fq" >> $log
-		( fastq-mcf -q $qual -l $read_length -L $read_length -k 0 -t 0.001 $adapters $outdir/dereplicated_data/$line.read.fq -o $outdir/dereplicated_quality_filtered_data/$line.read.mcf.fq > $outdir/dereplicated_quality_filtered_data/log_${line}_fastq-mcf.txt 2>&1 || true ) &
+		echo "	fastq-mcf -q $qual -l $read_length -L $read_length -k 0 -t 0.001 $adapters $dqf/$line.read.fq -o $dqf/$line.read.mcf.fq" >> $log
+		( fastq-mcf -q $qual -l $read_length -L $read_length -k 0 -t 0.001 $adapters $dqf/$line.read.fq -o $dqf/$line.read.mcf.fq > $dqf/log_${line}_fastq-mcf.txt 2>&1 || true ) &
 	done
 	fi
 	if [[ "$mode" == "paired" ]]; then
-	for line in `cat $repfile | cut -f1`; do
+	for line in `cat $mapfile | cut -f1`; do
 		while [ $( pgrep -P $$ |wc -w ) -ge ${threads} ]; do
 		sleep 1
 		done
-		echo "	fastq-mcf -q $qual -l $read_length -L $read_length -k 0 -t 0.001 $adapters $outdir/dereplicated_data/$line.read1.fq $outdir/dereplicated_data/$line.read2.fq -o $outdir/dereplicated_quality_filtered_data/$line.read1.mcf.fq -o $outdir/dereplicated_quality_filtered_data/$line.read2.mcf.fq" >> $log
-		( fastq-mcf -q $qual -l $read_length -L $read_length -k 0 -t 0.001 $adapters $outdir/dereplicated_data/$line.read1.fq $outdir/dereplicated_data/$line.read2.fq -o $outdir/dereplicated_quality_filtered_data/$line.read1.mcf.fq -o $outdir/dereplicated_quality_filtered_data/$line.read2.mcf.fq > $outdir/dereplicated_quality_filtered_data/log_${line}_fastq-mcf.txt 2>&1 || true ) &
+		echo "	fastq-mcf -q $qual -l $read_length -L $read_length -k 0 -t 0.001 $adapters $dqf/$line.read1.fq $dqf/$line.read2.fq -o $dqf/$line.read1.mcf.fq -o $dqf/$line.read2.mcf.fq" >> $log
+		( fastq-mcf -q $qual -l $read_length -L $read_length -k 0 -t 0.001 $adapters $dqf/$line.read1.fq $dqf/$line.read2.fq -o $dqf/$line.read1.mcf.fq -o $dqf/$line.read2.mcf.fq > $dqf/log_${line}_fastq-mcf.txt 2>&1 || true ) &
 	done
 	fi
 wait
@@ -331,17 +332,17 @@ fi
 ## Join and concatenate separate fastq files (denovo analysis only) ## Stacks is choking on variable length reads. Combine only.
 ## Combine separate read files
 	res2=$(date +%s.%N)
-	if [[ ! -d $outdir/dereplicated_combined_data ]]; then
-echo "Combining read data (dereplicated data).
-"
-echo "Combining read data (dereplicated data).
-" >> $log
-	mkdir -p $outdir/dereplicated_combined_data
-	for sampleid in `cat $repfile`; do
-	echo "	cat $outdir/dereplicated_quality_filtered_data/${sampleid}.*.fq > $outdir/dereplicated_combined_data/${sampleid}.fq" >> $log
-	cat $outdir/dereplicated_quality_filtered_data/${sampleid}.*.fq > $outdir/dereplicated_combined_data/${sampleid}.fq
-	done
-	echo "" >> $log
+#	if [[ ! -d $outdir/dereplicated_combined_data ]]; then
+#echo "Combining read data (dereplicated data).
+#"
+#echo "Combining read data (dereplicated data).
+#" >> $log
+#	mkdir -p $outdir/dereplicated_combined_data
+#	for sampleid in `cat $repfile`; do
+#	echo "	cat $outdir/dereplicated_quality_filtered_data/${sampleid}.*.fq > $outdir/dereplicated_combined_data/${sampleid}.fq" >> $log
+#	cat $outdir/dereplicated_quality_filtered_data/${sampleid}.*.fq > $outdir/dereplicated_combined_data/${sampleid}.fq
+#	done
+#	echo "" >> $log
 
 	res3=$(date +%s.%N)
 	dt=$(echo "$res3 - $res2" | bc)
@@ -355,9 +356,10 @@ echo "Combining read data (dereplicated data).
 	runtime=`printf "Read combining runtime: %d days %02d hours %02d minutes %02.1f seconds\n" $dd $dh $dm $ds`
 	echo "$runtime
 	" >> $log
-	else
-echo "Combining previously performed (dereplicated data). Skipping step.
-$outdir/combined_data
-"
-	fi
+#	else
+#echo "Combining previously performed (dereplicated data). Skipping step.
+#$outdir/combined_data
+#"
+#	fi
 
+exit 0
