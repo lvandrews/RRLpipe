@@ -61,17 +61,10 @@ trap finish EXIT
 	stderr=($2)
 	randcode=($3)
 	config=($4)
-<<<<<<< HEAD
-	libdir=($5)
-	docdir=($6)
-	tmpdir=($7)
-	metadatafile0=($8)
-=======
   libdir=($5)
   docdir=($6)
   tmpdir=($7)
 	mapfile=($8)
->>>>>>> d29a8ca6190358be8c835c9bfedee0cd37b8de01
 	index=($9)
 	read1=(${10})
 	read2=(${11})
