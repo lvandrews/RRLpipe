@@ -21,7 +21,7 @@ _RRLpipe_complete()
 
   ## Basic options to autocomplete
   opts="configure print_config check check_result help demult
-	update
+	update analyze stats
         "
 
   ## Complete available RRLpipe command arguments
