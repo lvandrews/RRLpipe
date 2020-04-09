@@ -20,9 +20,7 @@ _RRLpipe_complete()
   prev="${COMP_WORDS[COMP_CWORD-1]}"
 
   ## Basic options to autocomplete
-  opts="configure print_config check check_result help
-	phix_filtering strip_primers test
-	test_result tutorial
+  opts="configure print_config check check_result help demult
 	update
         "
 
@@ -56,5 +54,5 @@ _RRLpipe_complete()
 }
 
   ## Register _RRLpipe_complete for RRLpipe
-complete -F _RRLpipe_complete RRLpipe
+complete -o default -F _RRLpipe_complete RRLpipe
 
