@@ -76,11 +76,9 @@ set -e
 
 ## If incorrect number of arguments supplied, display usage
         if [[ "$#" -le "7" ]] || [[ "$#" -ge "10" ]]; then
-                cat $docdir/demult.usage
+                cat $docdir/analyze.usage
                 exit 1
         fi
-
-
 
 ## Paths and variables
         bindir="$( cd "$( dirname "$0" )" && pwd )"
