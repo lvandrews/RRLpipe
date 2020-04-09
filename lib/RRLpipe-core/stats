@@ -1,0 +1,138 @@
+#!/usr/bin/env bash
+#
+#  RRLpipe stats - RRLpipe stats script
+#
+#  Version 0.1 (April 8, 2020)
+#
+#  Copyright (c) 2020 -- Lela Andrews
+#
+#  This software is provided 'as-is', without any express or implied
+#  warranty. In no event will the authors be held liable for any damages
+#  arising from the use of this software.
+#
+#  Permission is granted to anyone to use this software for any purpose,
+#  including commercial applications, and to alter it and redistribute it
+#  freely, subject to the following restrictions:
+#
+#  1. The origin of this software must not be misrepresented; you must not
+#     claim that you wrote the original software. If you use this software
+#     in a product, an acknowledgment in the product documentation would be
+#     appreciated but is not required.
+#  2. Altered source versions must be plainly marked as such, and must not be
+#     misrepresented as being the original software.
+#  3. This notice may not be removed or altered from any source distribution.
+#
+
+# Trap function on exit.
+function finish {
+if [[ -f $stdout ]]; then
+        rm $stdout
+fi
+if [[ -f $stderr ]]; then
+        rm $stderr
+fi
+if [[ -f $stdout ]]; then
+        rm -r $stdout
+fi
+if [[ -f $stderr ]]; then
+        rm -r $stderr
+fi
+if [[ -f $idtemp ]]; then
+        rm -r $idtemp
+fi
+if [[ -f $indtemp ]]; then
+        rm -r $indtemp
+fi
+if [[ -f $poptemp ]]; then
+        rm -r $poptemp
+fi
+if [[ -f $popmap0 ]]; then
+        rm -r $popmap0
+fi
+if [[ -f $popmap1 ]]; then
+        rm -r $popmap1
+fi
+if [[ -f $mapcheck ]]; then
+        rm -r $mapcheck
+fi
+}
+trap finish EXIT
+set -e
+
+## Define inputs and working directory
+
+        workdir=$(pwd)
+        stdout=($1)
+        stderr=($2)
+        randcode=($3)
+        config=($4)
+        libdir=($5)
+        docdir=($6)
+        tmpdir=($7)
+        mode=($8)
+        index=($9)
+        read1=(${10})
+        read2=(${11})
+
+## If incorrect number of arguments supplied, display usage
+        if [[ "$#" -le "7" ]] || [[ "$#" -ge "10" ]]; then
+                cat $docdir/stats.usage
+                exit 1
+        fi
+
+
+
+## Paths and variables
+        bindir="$( cd "$( dirname "$0" )" && pwd )"
+        libdir=$(grep "Libraries" $bindir/.RRLpipe.config | cut -f2)
+        srcdir=$(grep "Resources" $bindir/.RRLpipe.config | cut -f2)
+        docdir=$(grep "Documentation" $bindir/.RRLpipe.config | cut -f2)
+        tmpdir=$(grep "Temporary" $bindir/.RRLpipe.config | cut -f2)
+        cmpdir=$(grep "Completion" $bindir/.RRLpipe.config | cut -f2)
+
+## Usage and help
+        usage="$docdir/stats.usage"
+        help="$docdir/stats.help"
+
+## Check whether user supplied help, -h or --help. If yes display help.
+        if [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]] || [[ "$1" == "help" ]]; then
+        less $help
+                exit 0
+        fi
+
+#### CHANGE BELOW HERE!!!
+## Check whether user supplied denovo and execute appropriate workflow
+	if [[ "$mode" == "denovo" ]]; then
+		echo "Starting analysis.
+Mode: denovo
+#echo config options here, send output to log
+"
+		sleep 1
+		echo "Calling denovo_map.pl
+"
+
+		denovo_map.pl -M 5 --samples ./Combined2/ --popmap ./map.BuschRADseq.nodupes.pops.Working.txt -o ./denovo_output -X populations: --plink --structure --vcf --min-populations 2 --min-samples-per-pop 0.75 --paired -T 24 -p 2 -r 0.
+		wait
+		sleep 10
+		echo "denovo_map.pl complete.
+
+Calling populations
+"
+
+		populations -P ./denovo_output -O ./populations_output_bygenotype -M ./Genotype.map.BuschRADseq.nodupes.Working.txt --plink --structure --vcf --min-populations 2 --min-samples-per-pop 0.75 -t 24 --min-populations 2 --min-samples-per-pop 0.75
+		wait
+		sleep 10
+		echo "populations complete.
+
+Output directory:
+Log files:
+"
+
+
+
+#populations -P ./denovo_output -M ./map.BuschRADseq.nodupes.pops.Working.txt --plink --structure --vcf --min-populations 2 --min-samples-per-pop 0.75 -t 24 --min-populations 2 --min-samples-per-pop 0.75
+
+
+
+
+exit 0
