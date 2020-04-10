@@ -5,3 +5,6 @@ demult
 log.sh
 readconfig
 RRLpipe_autocomplete
+stats
+analyze
+
