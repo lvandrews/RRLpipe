@@ -10,3 +10,4 @@ Installation: sudo ./install
 
 Uninstallation: sudo ./uninstall  
 
+To update an existing installation, repeat the installation command.
