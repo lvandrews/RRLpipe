@@ -171,7 +171,7 @@ No config file is present. Running config utility to establish configurable opti
 #               exit 0
 #               fi
 #        bash $libdir/update
-         echo "update function not available at this time. Use git pull and reinstall RRLpipe."
+         echo "update function not available at this time via this command. To update, repeat the installation command (see README.md)."
         exit 0
         fi
 
