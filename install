@@ -157,6 +157,7 @@ Documentation:	$docdir
 Temporary:	$tmpdir
 Completion:	$bacdir
 
+If you are updating RRLpipe, make sure you first ran \"git pull\".
 
 If you would like to proceed, type \"yes\" or type anything else to exit now.
 "
