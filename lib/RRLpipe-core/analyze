@@ -60,28 +60,27 @@ trap finish EXIT
 set -e
 
 ## Define inputs and working directory
-
         workdir=$(pwd)
         stdout=($1)
         stderr=($2)
         randcode=($3)
-        config=($4)
-        libdir=($5)
-        docdir=($6)
-        tmpdir=($7)
-        mode=($8)
-        index=($9)
-        read1=(${10})
-        read2=(${11})
+        bindir=($4)
+	config=($5)
+        libdir=($6)
+        docdir=($7)
+        tmpdir=($8)
+        mode=($9)
+        index=(${10})
+        read1=(${11})
+        read2=(${12})
 
 ## If incorrect number of arguments supplied, display usage
-        if [[ "$#" -le "7" ]] || [[ "$#" -ge "10" ]]; then
-                cat $docdir/analyze.usage
-                exit 1
-        fi
+#        if [[ "$#" -le "7" ]] || [[ "$#" -ge "10" ]]; then
+#                cat $docdir/analyze.usage
+#                exit 1
+#        fi
 
 ## Paths and variables
-        bindir="$( cd "$( dirname "$0" )" && pwd )"
         libdir=$(grep "Libraries" $bindir/.RRLpipe.config | cut -f2)
         srcdir=$(grep "Resources" $bindir/.RRLpipe.config | cut -f2)
         docdir=$(grep "Documentation" $bindir/.RRLpipe.config | cut -f2)
@@ -98,32 +97,57 @@ set -e
                 exit 0
         fi
 
+## Read configurable options
+	CPU_cores=$(grep -v "#" $config | grep "CPU_cores" | cut -f2)
+	Sample_path=$(grep -v "#" $config | grep "Sample_path" | cut -f2)
+	Popmap=$(grep -v "#" $config | grep "Popmap" | cut -f2)
+	Ustacks_mm=$(grep -v "#" $config | grep "Ustacks_mm" | cut -f2)
+	Cstacks_mm=$(grep -v "#" $config | grep "Cstacks_mm" | cut -f2)
+	Var_alpha=$(grep -v "#" $config | grep "Var_alpha" | cut -f2)
+	GT_alpha=$(grep -v "#" $config | grep "GT_alpha" | cut -f2)
+	Paired_test=$(grep -v "#" $config | grep "Paired" | cut -f2)
+		if [[ "$Paired_test" == "TRUE" ]]; then
+			Paired="--paired"
+		else
+			Paired=""
+		fi
+	Rm_PCR_dups_test=$(grep -v "#" $config | grep "Rm_PCR_dups" | cut -f2)
+               if [[ "$Rm_PCR_dups_test" == "TRUE" ]]; then
+                        Rm_PCR_dups="--rm-pcr-duplicates"
+                else
+                        Rm_PCR_dups=""
+                fi
+	Min_pops=$(grep -v "#" $config | grep "Min_pops" | cut -f2)
+	Min_samps=$(grep -v "#" $config | grep "Min_samps" | cut -f2)
+
 ## Check whether user supplied denovo and execute appropriate workflow
-	if [[ "$mode" == "denovo" ]]; then
-		echo "Starting analysis.
-Mode: denovo
+#	if [[ "$mode" == "denovo" ]]; then
+#		echo "Starting analysis.
+#Mode: denovo
+
 #echo config options here, send output to log
-"
-		sleep 1
-		echo "Calling denovo_map.pl
-"
 
-		denovo_map.pl -M 5 --samples ./Combined2/ --popmap ./map.BuschRADseq.nodupes.pops.Working.txt -o ./denovo_output -X populations: --plink --structure --vcf --min-populations 2 --min-samples-per-pop 0.75 --paired -T 24 -p 2 -r 0.
-		wait
-		sleep 10
-		echo "denovo_map.pl complete.
+		dnmcommand="denovo_map.pl --samples $Sample_path --popmap $Popmap -o ./denovo_output -M $Ustacks_mm -n $Cstacks_mm --var-alpha $Var_alpha --gt-alpha $GT_alpha -X \"populations: -p $Min_pops -r $Min_samps -T $CPU_cores $Paired $Rm_PCR_dups --plink --structure --vcf\""
+echo $dnmcommand
+#		sleep 1
+#		echo "Calling denovo_map.pl
+#"
+#
+#		wait
+#		sleep 10
+#		echo "denovo_map.pl complete.
+#
+#Calling populations
+#"
+#
+#		populations -P ./denovo_output -O ./populations_output_bygenotype -M ./Genotype.map.BuschRADseq.nodupes.Working.txt --plink --structure --vcf --min-populations 2 --min-samples-per-pop 0.75 -t 24 --min-populations 2 --min-samples-per-pop 0.75
+#		wait
+#		sleep 10
+#		echo "populations complete.
 
-Calling populations
-"
+#Output directory:
+#Log files:
 
-		populations -P ./denovo_output -O ./populations_output_bygenotype -M ./Genotype.map.BuschRADseq.nodupes.Working.txt --plink --structure --vcf --min-populations 2 --min-samples-per-pop 0.75 -t 24 --min-populations 2 --min-samples-per-pop 0.75
-		wait
-		sleep 10
-		echo "populations complete.
-
-Output directory:
-Log files:
-"
 
 
 
