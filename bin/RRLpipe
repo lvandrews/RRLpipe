@@ -177,13 +177,13 @@ No config file is present. Running config utility to establish configurable opti
 
 ## Check whether user supplied analyze. If yes, run analyze
         if [[ "$1" == "analyze" ]]; then
-            bash $libdir/analyze $stdout $stderr $randcode $configfile $libdir $docdir $tmpdir $2 $3 $4 $5 
+            bash $libdir/analyze $stdout $stderr $randcode $bindir $configfile $libdir $docdir $tmpdir $2 $3 $4 $5
             exit 0
         fi
 
 ## Check whether user supplied stats. If yes, run stats
         if [[ "$1" == "stats" ]]; then
-            bash $libdir/stats $stdout $stderr $randcode $configfile $libdir $docdir $tmpdir $2 $3 $4 $5
+            bash $libdir/stats $stdout $stderr $randcode $bindir $configfile $libdir $docdir $tmpdir $2 $3 $4 $5
             exit 0
         fi
 
